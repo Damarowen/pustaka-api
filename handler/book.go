@@ -2,12 +2,13 @@ package handler
 
 import (
 	"fmt"
+
 	"github.com/gin-gonic/gin"
+
 	//"github.com/go-playground/validator/v10"
 	"net/http"
 	"pustaka-api/dto"
 	"pustaka-api/helper"
-
 )
 
 func RootHandler(c *gin.Context) {
@@ -48,10 +49,15 @@ func BooksPostHandler(c *gin.Context) {
 		return
 	}
 
+
+
 	c.JSON(http.StatusOK, gin.H{
-		"title ": bookDTO.Title,
-		"price":  bookDTO.Price,
+		"title ":      bookDTO.Title,
+		"price":       bookDTO.Price,
+		"description": bookDTO.Description,
+		"rating":      bookDTO.Rating,
 		//"sub_title": bookInput.Subtitle,
 		"message": "Success",
 	})
+
 }

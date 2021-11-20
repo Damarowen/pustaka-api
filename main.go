@@ -4,8 +4,13 @@ import (
 	//"encoding/json"
 
 	//	"log"
-	"github.com/gin-gonic/gin"
+	//	"log"
+	//	"pustaka-api/book"
+	"log"
+	"pustaka-api/DB"
 	"pustaka-api/handler"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -19,11 +24,18 @@ const (
 func main() {
 
 	router := gin.Default()
+	err := DB.NewConnDb()
 
-	router.GET("/", handler.RootHandler)
-	router.GET("/books/:id", handler.BooksHandler)
-	router.GET("/query", handler.QueryHandler)
-	router.POST("/books", handler.BooksPostHandler)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	
+	v1 := router.Group("/v1")
+
+	v1.GET("/", handler.RootHandler)
+	v1.GET("/books/:id", handler.BooksHandler)
+	v1.GET("/query", handler.QueryHandler)
+	v1.POST("/books", handler.BooksPostHandler)
 
 	router.Run(":9090")
 
