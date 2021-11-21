@@ -2,8 +2,8 @@ package book
 
 import "time"
 
-type Book struct {
-	ID int
+type Book struct { 
+	Id uint  
 	Title string
 	Description string
 	Price int

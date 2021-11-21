@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 const (
@@ -29,8 +30,9 @@ func main() {
 	router := gin.Default()
 	// err := DB.NewConnDb()
 
+
 	dsn := "root:root@tcp(127.0.0.1:3306)/pustaka_api?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{  Logger: logger.Default.LogMode(logger.Info)	})
 
 	if err != nil {
 		log.Fatal(err.Error())

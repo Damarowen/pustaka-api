@@ -1,10 +1,13 @@
 package book
 
-import "gorm.io/gorm"
+import (
+
+	"gorm.io/gorm"
+)
 
 type Irepository interface {
 	FindAll() ([]Book, error)
-	FindById(ID int) (Book, error)
+	FindById(ID uint) (Book, error)
 	Create(book Book) (Book, error)
 	Update(book Book) (Book, error)
 	Delete(book Book) (Book, error)
@@ -27,7 +30,7 @@ func (r *PustakaApiRepository ) FindAll() ([]Book, error){
 	return books, err
 }
 
-func (r *PustakaApiRepository ) FindById(ID int) (Book, error){
+func (r *PustakaApiRepository ) FindById(ID uint) (Book, error){
 	var book  Book
 
 	err := r.pustaka_api.Find(&book, ID).Error

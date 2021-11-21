@@ -1,12 +1,15 @@
 package book
 
+import (
+	"errors"
+)
+
 type Iservice interface {
 	FindAll() ([]Book, error)
-	FindById(ID int) (Book, error)
+	FindById(ID uint) (Book, error)
 	Create(book BookRequest) (Book, error)
 	Update(ID BookRequest) (Book, error)
 	Delete(ID BookRequest) (Book, error)
-
 }
 
 type Service struct {
@@ -22,11 +25,16 @@ func (s *Service) FindAll() ([]Book, error) {
 	return books, err
 }
 
-func (s *Service) FindById(ID int) (Book, error) {
+func (s *Service) FindById(ID uint) (Book, error) {
 
 	book, err := s.PustakaApiRepository.FindById(ID)
 
+	if book.Id == 0 {
+		return book, errors.New("ID NOT FOUND")
+	}
+
 	return book, err
+
 }
 
 func (s *Service) Create(bookRequest BookRequest) (Book, error) {
@@ -42,9 +50,13 @@ func (s *Service) Create(bookRequest BookRequest) (Book, error) {
 	return newBook, err
 }
 
-func (s *Service) Update(ID int, bookRequest BookRequest) (Book, error) {
+func (s *Service) Update(ID uint, bookRequest BookRequest) (Book, error) {
 
 	find, err := s.PustakaApiRepository.FindById(ID)
+
+	if find.Id == 0 {
+		return find, errors.New("ID NOT FOUND")
+	}
 
 	find.Title = bookRequest.Title
 	find.Price = bookRequest.Price
@@ -55,10 +67,14 @@ func (s *Service) Update(ID int, bookRequest BookRequest) (Book, error) {
 	return b, err
 }
 
-func (s *Service) Delete(ID int) (Book, error) {
+func (s *Service) Delete(ID uint) (Book, error) {
 
 	find, err := s.PustakaApiRepository.FindById(ID)
+
+	if find.Id == 0 {
+		return find, errors.New("ID NOT FOUND")
+	}
+
 	b, err := s.PustakaApiRepository.Delete(find)
 	return b, err
 }
-

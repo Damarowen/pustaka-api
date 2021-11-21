@@ -1,6 +1,9 @@
 package helper
 
-import "strings"
+import (
+	"pustaka-api/book"
+	"strings"
+)
 
 //Response is used for static shape json return
 type Response struct {
@@ -34,4 +37,16 @@ func BuildErrorResponse(message string, err string, data interface{}) Response {
 		Data:    data,
 	}
 	return res
+}
+
+func MappingResponse(b book.Book) book.BookResponse{
+
+	return book.BookResponse{
+		Id: b.Id,
+		Title: b.Title,
+		Price: b.Price,
+		Description: b.Description,
+		Rating: b.Rating,
+	}
+
 }

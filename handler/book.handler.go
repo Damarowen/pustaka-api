@@ -28,7 +28,6 @@ func (h *BookHandlers) RootHandler(c *gin.Context) {
 	})
 }
 
-
 func (h *BookHandlers) GetAllBookHandler(c *gin.Context) {
 
 	allBook, err := h.bookService.FindAll()
@@ -47,14 +46,13 @@ func (h *BookHandlers) GetAllBookHandler(c *gin.Context) {
 
 }
 
-
 func (h *BookHandlers) GetByIdHandler(c *gin.Context) {
 
 	idString := c.Param("id")
 
-	ID, _ := strconv.Atoi(idString)
+	id, err := strconv.ParseUint(idString, 10, 32)
 
-	singleBook, err := h.bookService.FindById(ID)
+	singleBook, err := h.bookService.FindById(uint(id))
 
 	if err != nil {
 		fmt.Println(err)
@@ -63,12 +61,13 @@ func (h *BookHandlers) GetByIdHandler(c *gin.Context) {
 		return
 	}
 
+	res := helper.MappingResponse(singleBook)
+
 	c.JSON(http.StatusOK, gin.H{
-		"data ":   singleBook,
+		"data ":   res,
 		"message": "Success",
 	})
 }
-
 
 func (h *BookHandlers) UpdateBookHandler(c *gin.Context) {
 
@@ -85,9 +84,9 @@ func (h *BookHandlers) UpdateBookHandler(c *gin.Context) {
 
 	idString := c.Param("id")
 
-	ID, _ := strconv.Atoi(idString)
+	id, err := strconv.ParseUint(idString, 10, 32)
 
-	singleBook, err := h.bookService.Update(ID, bookDTO)
+	singleBook, err := h.bookService.Update(uint(id), bookDTO)
 
 	if err != nil {
 		fmt.Println(err)
@@ -104,12 +103,11 @@ func (h *BookHandlers) UpdateBookHandler(c *gin.Context) {
 
 func (h *BookHandlers) DeleteBookHandler(c *gin.Context) {
 
-
 	idString := c.Param("id")
 
-	ID, _ := strconv.Atoi(idString)
+	id, err := strconv.ParseUint(idString, 10, 32)
 
-	singleBook, err := h.bookService.Delete(ID)
+	singleBook, err := h.bookService.Delete(uint(id))
 
 	if err != nil {
 		fmt.Println(err)
@@ -151,7 +149,6 @@ func (h *BookHandlers) PostBookHandler(c *gin.Context) {
 	})
 
 }
-
 
 func (h *BookHandlers) QueryHandler(c *gin.Context) {
 	title := c.Query("title")
