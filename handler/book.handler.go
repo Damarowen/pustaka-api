@@ -27,7 +27,9 @@ func (h *BookHandlers) RootHandler(c *gin.Context) {
 		"usia": "17",
 	})
 }
-func (h *BookHandlers) GetAllBook(c *gin.Context) {
+
+
+func (h *BookHandlers) GetAllBookHandler(c *gin.Context) {
 
 	allBook, err := h.bookService.FindAll()
 
@@ -44,7 +46,9 @@ func (h *BookHandlers) GetAllBook(c *gin.Context) {
 	})
 
 }
-func (h *BookHandlers) GetById(c *gin.Context) {
+
+
+func (h *BookHandlers) GetByIdHandler(c *gin.Context) {
 
 	idString := c.Param("id")
 
@@ -65,17 +69,62 @@ func (h *BookHandlers) GetById(c *gin.Context) {
 	})
 }
 
-func (h *BookHandlers) QueryHandler(c *gin.Context) {
-	title := c.Query("title")
-	price := c.Query("price")
+
+func (h *BookHandlers) UpdateBookHandler(c *gin.Context) {
+
+	var bookDTO book.BookRequest
+
+	errDTO := c.ShouldBind(&bookDTO)
+
+	if errDTO != nil {
+		fmt.Println(errDTO)
+		response := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	idString := c.Param("id")
+
+	ID, _ := strconv.Atoi(idString)
+
+	singleBook, err := h.bookService.Update(ID, bookDTO)
+
+	if err != nil {
+		fmt.Println(err)
+		response := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"title ": title,
-		"price":  price,
+		"data ":   singleBook,
+		"message": "Success",
 	})
 }
 
-func (h *BookHandlers) BooksPostHandler(c *gin.Context) {
+func (h *BookHandlers) DeleteBookHandler(c *gin.Context) {
+
+
+	idString := c.Param("id")
+
+	ID, _ := strconv.Atoi(idString)
+
+	singleBook, err := h.bookService.Delete(ID)
+
+	if err != nil {
+		fmt.Println(err)
+		response := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data ":   singleBook,
+		"message": "Success",
+	})
+}
+
+func (h *BookHandlers) PostBookHandler(c *gin.Context) {
 	var bookDTO book.BookRequest
 
 	errDTO := c.ShouldBind(&bookDTO)
@@ -101,4 +150,15 @@ func (h *BookHandlers) BooksPostHandler(c *gin.Context) {
 		"message": "Success",
 	})
 
+}
+
+
+func (h *BookHandlers) QueryHandler(c *gin.Context) {
+	title := c.Query("title")
+	price := c.Query("price")
+
+	c.JSON(http.StatusOK, gin.H{
+		"title ": title,
+		"price":  price,
+	})
 }

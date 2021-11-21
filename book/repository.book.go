@@ -6,6 +6,9 @@ type Irepository interface {
 	FindAll() ([]Book, error)
 	FindById(ID int) (Book, error)
 	Create(book Book) (Book, error)
+	Update(book Book) (Book, error)
+	Delete(book Book) (Book, error)
+
 }
 
 type PustakaApiRepository struct {
@@ -35,6 +38,20 @@ func (r *PustakaApiRepository ) FindById(ID int) (Book, error){
 func (r *PustakaApiRepository ) Create(book Book) (Book, error){
 
 	err := r.pustaka_api.Create(&book).Error
+
+	return book, err
+}
+
+func (r *PustakaApiRepository ) Update(book Book) (Book, error){
+
+	err := r.pustaka_api.Save(&book).Error
+
+	return book, err
+}
+
+func (r *PustakaApiRepository ) Delete(book Book) (Book, error){
+
+	err := r.pustaka_api.Delete(&book).Error
 
 	return book, err
 }

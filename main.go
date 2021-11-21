@@ -47,11 +47,14 @@ func main() {
 	v1 := router.Group("/v1")
 
 	v1.GET("/", bookHandler.RootHandler)
-	v1.GET("/books", bookHandler.GetAllBook)
-	v1.GET("/books/:id", bookHandler.GetById)
-	//v1.GET("/query", bookHandler.QueryHandler)
-	v1.POST("/books", bookHandler.BooksPostHandler)
+	v1.GET("/books", bookHandler.GetAllBookHandler)
+	v1.GET("/books/:id", bookHandler.GetByIdHandler)
+	v1.POST("/books", bookHandler.PostBookHandler)
+	v1.PUT("/books/:id", bookHandler.UpdateBookHandler)
+	v1.DELETE("/books/:id", bookHandler.DeleteBookHandler)
 
-	router.Run(":9090")
+	//v1.GET("/query", bookHandler.QueryHandler)
+
+	router.Run("127.0.0.1:9090")
 
 }
