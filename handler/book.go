@@ -2,32 +2,70 @@ package handler
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
 	//"github.com/go-playground/validator/v10"
 	"net/http"
-	"pustaka-api/dto"
+	"pustaka-api/book"
 	"pustaka-api/helper"
 )
 
-func RootHandler(c *gin.Context) {
+type BookHandlers struct {
+	bookService book.Service
+}
+
+func NewBookHandler(bookService *book.Service) *BookHandlers {
+	return &BookHandlers{*bookService}
+}
+
+func (h *BookHandlers) RootHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"name": "damar",
 		"usia": "17",
 	})
 }
+func (h *BookHandlers) GetAllBook(c *gin.Context) {
 
-func BooksHandler(c *gin.Context) {
-	id := c.Param("id")
+	allBook, err := h.bookService.FindAll()
+
+	if err != nil {
+		fmt.Println(err)
+		response := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id ": id,
+		"data ":   allBook,
+		"message": "Success",
+	})
+
+}
+func (h *BookHandlers) GetById(c *gin.Context) {
+
+	idString := c.Param("id")
+
+	ID, _ := strconv.Atoi(idString)
+
+	singleBook, err := h.bookService.FindById(ID)
+
+	if err != nil {
+		fmt.Println(err)
+		response := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data ":   singleBook,
+		"message": "Success",
 	})
 }
 
-func QueryHandler(c *gin.Context) {
+func (h *BookHandlers) QueryHandler(c *gin.Context) {
 	title := c.Query("title")
 	price := c.Query("price")
 
@@ -37,8 +75,8 @@ func QueryHandler(c *gin.Context) {
 	})
 }
 
-func BooksPostHandler(c *gin.Context) {
-	var bookDTO dto.Bookinput
+func (h *BookHandlers) BooksPostHandler(c *gin.Context) {
+	var bookDTO book.BookRequest
 
 	errDTO := c.ShouldBind(&bookDTO)
 
@@ -49,14 +87,17 @@ func BooksPostHandler(c *gin.Context) {
 		return
 	}
 
+	newBook, err := h.bookService.Create(bookDTO)
 
+	if err != nil {
+		fmt.Println(errDTO)
+		response := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"title ":      bookDTO.Title,
-		"price":       bookDTO.Price,
-		"description": bookDTO.Description,
-		"rating":      bookDTO.Rating,
-		//"sub_title": bookInput.Subtitle,
+		"data ":   newBook,
 		"message": "Success",
 	})
 
