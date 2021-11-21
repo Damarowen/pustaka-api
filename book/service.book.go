@@ -2,14 +2,15 @@ package book
 
 import (
 	"errors"
+	"pustaka-api/models"
 )
 
 type Iservice interface {
-	FindAll() ([]Book, error)
-	FindById(ID uint) (Book, error)
-	Create(book BookRequest) (Book, error)
-	Update(ID BookRequest) (Book, error)
-	Delete(ID BookRequest) (Book, error)
+	FindAll() ([]models.Book, error)
+	FindById(ID uint) (models.Book, error)
+	Create(book BookRequest) (models.Book, error)
+	Update(ID BookRequest) (models.Book, error)
+	Delete(ID BookRequest) (models.Book, error)
 }
 
 type Service struct {
@@ -20,12 +21,12 @@ func NewService(PustakaApiRepository Irepository) *Service {
 	return &Service{PustakaApiRepository}
 }
 
-func (s *Service) FindAll() ([]Book, error) {
+func (s *Service) FindAll() ([]models.Book, error) {
 	books, err := s.PustakaApiRepository.FindAll()
 	return books, err
 }
 
-func (s *Service) FindById(ID uint) (Book, error) {
+func (s *Service) FindById(ID uint) (models.Book, error) {
 
 	book, err := s.PustakaApiRepository.FindById(ID)
 
@@ -37,9 +38,9 @@ func (s *Service) FindById(ID uint) (Book, error) {
 
 }
 
-func (s *Service) Create(bookRequest BookRequest) (Book, error) {
+func (s *Service) Create(bookRequest BookRequest) (models.Book, error) {
 
-	book := Book{
+	book := models.Book{
 		Title:       bookRequest.Title,
 		Price:       bookRequest.Price,
 		Description: bookRequest.Description,
@@ -50,7 +51,7 @@ func (s *Service) Create(bookRequest BookRequest) (Book, error) {
 	return newBook, err
 }
 
-func (s *Service) Update(ID uint, bookRequest BookRequest) (Book, error) {
+func (s *Service) Update(ID uint, bookRequest BookRequest) (models.Book, error) {
 
 	find, err := s.PustakaApiRepository.FindById(ID)
 
@@ -67,7 +68,7 @@ func (s *Service) Update(ID uint, bookRequest BookRequest) (Book, error) {
 	return b, err
 }
 
-func (s *Service) Delete(ID uint) (Book, error) {
+func (s *Service) Delete(ID uint) (models.Book, error) {
 
 	find, err := s.PustakaApiRepository.FindById(ID)
 
