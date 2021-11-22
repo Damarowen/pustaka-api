@@ -3,14 +3,15 @@ package book
 import (
 	"errors"
 	"pustaka-api/models"
+	"pustaka-api/dto"
 )
 
 type Iservice interface {
 	FindAll() ([]models.Book, error)
 	FindById(ID uint) (models.Book, error)
-	Create(book BookRequest) (models.Book, error)
-	Update(ID BookRequest) (models.Book, error)
-	Delete(ID BookRequest) (models.Book, error)
+	Create(book dto.BookRequest) (models.Book, error)
+	Update(ID  dto.BookRequest) (models.Book, error)
+	Delete(ID  dto.BookRequest) (models.Book, error)
 }
 
 type Service struct {
@@ -38,7 +39,7 @@ func (s *Service) FindById(ID uint) (models.Book, error) {
 
 }
 
-func (s *Service) Create(bookRequest BookRequest) (models.Book, error) {
+func (s *Service) Create(bookRequest  dto.BookRequest) (models.Book, error) {
 
 	book := models.Book{
 		Title:       bookRequest.Title,
@@ -51,7 +52,7 @@ func (s *Service) Create(bookRequest BookRequest) (models.Book, error) {
 	return newBook, err
 }
 
-func (s *Service) Update(ID uint, bookRequest BookRequest) (models.Book, error) {
+func (s *Service) Update(ID uint, bookRequest  dto.BookRequest) (models.Book, error) {
 
 	find, err := s.PustakaApiRepository.FindById(ID)
 

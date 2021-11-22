@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"pustaka-api/book"
+	"pustaka-api/dto"
 	"pustaka-api/models"
 	"strings"
 )
@@ -40,9 +40,9 @@ func BuildErrorResponse(message string, err string, data interface{}) Response {
 	return res
 }
 
-func MappingResponse(b models.Book) book.BookResponse{
+func MappingResponse(b models.Book)  dto.BookResponse{
 
-	return book.BookResponse{
+	return  dto.BookResponse{
 		Id: b.ID,
 		Title: b.Title,
 		Price: b.Price,

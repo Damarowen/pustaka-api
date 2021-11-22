@@ -9,6 +9,7 @@ import (
 	//"github.com/go-playground/validator/v10"
 	"net/http"
 	"pustaka-api/book"
+	"pustaka-api/dto"
 	"pustaka-api/helper"
 )
 
@@ -71,7 +72,7 @@ func (h *BookHandlers) GetByIdHandler(c *gin.Context) {
 
 func (h *BookHandlers) UpdateBookHandler(c *gin.Context) {
 
-	var bookDTO book.BookRequest
+	var bookDTO  dto.BookRequest
 
 	errDTO := c.ShouldBind(&bookDTO)
 
@@ -123,7 +124,7 @@ func (h *BookHandlers) DeleteBookHandler(c *gin.Context) {
 }
 
 func (h *BookHandlers) PostBookHandler(c *gin.Context) {
-	var bookDTO book.BookRequest
+	var bookDTO  dto.BookRequest
 
 	errDTO := c.ShouldBind(&bookDTO)
 
