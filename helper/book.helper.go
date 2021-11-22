@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"pustaka-api/dto"
 	"pustaka-api/models"
 	"strings"
@@ -30,6 +31,7 @@ type EmptyObj struct{}
 
 //BuildErrorResponse method is to inject data value to dynamic failed response
 func BuildErrorResponse(message string, err string, data interface{}) Response {
+	fmt.Println(err, "<<<<<<<<<")
 	splittedError := strings.Split(err, "\n")
 	res := Response{
 		Status:  false,
