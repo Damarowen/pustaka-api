@@ -13,12 +13,23 @@ import (
 	"pustaka-api/helper"
 )
 
-type BookHandlers struct {
-	bookService book.Service
+
+type IBookHandlers interface {
+	RootHandler(context *gin.Context)
+	GetAllBookHandler(context *gin.Context)
+	GetByIdHandler(context *gin.Context)
+	UpdateBookHandler(context *gin.Context)
+	DeleteBookHandler(context *gin.Context)
+	PostBookHandler(context *gin.Context)
+	QueryBookHandler(context *gin.Context)
 }
 
-func NewBookHandler(bookService *book.Service) *BookHandlers {
-	return &BookHandlers{*bookService}
+type BookHandlers struct {
+	bookService book.Iservice
+}
+
+func NewBookHandler(bookService book.Iservice) IBookHandlers {
+	return &BookHandlers{bookService: bookService}
 }
 
 func (h *BookHandlers) RootHandler(c *gin.Context) {
@@ -151,7 +162,7 @@ func (h *BookHandlers) PostBookHandler(c *gin.Context) {
 
 }
 
-func (h *BookHandlers) QueryHandler(c *gin.Context) {
+func (h *BookHandlers) QueryBookHandler(c *gin.Context) {
 	title := c.Query("title")
 	price := c.Query("price")
 
