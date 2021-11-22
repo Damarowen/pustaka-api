@@ -18,7 +18,7 @@ type Service struct {
 	PustakaApiRepository Irepository
 }
 
-func NewService(PustakaApiRepository Irepository) *Service {
+func NewBookService(PustakaApiRepository Irepository) *Service {
 	return &Service{PustakaApiRepository}
 }
 

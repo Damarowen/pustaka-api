@@ -14,8 +14,8 @@ func SetupRouter(db *config.DbConn) *gin.Engine {
 	r := gin.Default()
 
 
-	bookRepository := book.NewRepository(db.DbSQL)
-	bookService := book.NewService(bookRepository)
+	bookRepository := book.NewBookRepository(db.DbSQL)
+	bookService := book.NewBookService(bookRepository)
 	bookHandler := handler.NewBookHandler(bookService)
 
 	v1 := r.Group("/v1")

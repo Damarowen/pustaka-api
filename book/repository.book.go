@@ -19,7 +19,7 @@ type PustakaApiRepository struct {
 	pustaka_api *gorm.DB
 }
 
-func NewRepository(db *gorm.DB) *PustakaApiRepository {
+func NewBookRepository(db *gorm.DB) *PustakaApiRepository {
 	return &PustakaApiRepository{db}
 }
 
