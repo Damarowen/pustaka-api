@@ -43,7 +43,7 @@ func BuildErrorResponse(message string, err string, data interface{}) Response {
 func MappingResponse(b models.Book) book.BookResponse{
 
 	return book.BookResponse{
-		Id: b.Id,
+		Id: b.ID,
 		Title: b.Title,
 		Price: b.Price,
 		Description: b.Description,

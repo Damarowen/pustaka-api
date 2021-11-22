@@ -2,16 +2,20 @@ package Routes
 
 import (
 	"pustaka-api/book"
+	"pustaka-api/config"
 	"pustaka-api/handler"
 
 	"github.com/gin-gonic/gin"
 )
 
 //SetupRouter ... Configure routes
-func SetupRouter(bookService *book.Service) *gin.Engine {
+func SetupRouter(db *config.DbConn) *gin.Engine {
 
 	r := gin.Default()
 
+
+	bookRepository := book.NewRepository(db.DbSQL)
+	bookService := book.NewService(bookRepository)
 	bookHandler := handler.NewBookHandler(bookService)
 
 	v1 := r.Group("/v1")

@@ -30,7 +30,7 @@ func (s *Service) FindById(ID uint) (models.Book, error) {
 
 	book, err := s.PustakaApiRepository.FindById(ID)
 
-	if book.Id == 0 {
+	if book.ID == 0 {
 		return book, errors.New("ID NOT FOUND")
 	}
 
@@ -55,7 +55,7 @@ func (s *Service) Update(ID uint, bookRequest BookRequest) (models.Book, error) 
 
 	find, err := s.PustakaApiRepository.FindById(ID)
 
-	if find.Id == 0 {
+	if find.ID== 0 {
 		return find, errors.New("ID NOT FOUND")
 	}
 
@@ -72,7 +72,7 @@ func (s *Service) Delete(ID uint) (models.Book, error) {
 
 	find, err := s.PustakaApiRepository.FindById(ID)
 
-	if find.Id == 0 {
+	if find.ID== 0 {
 		return find, errors.New("ID NOT FOUND")
 	}
 
