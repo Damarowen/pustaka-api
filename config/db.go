@@ -48,7 +48,7 @@ func ConnectDatabase() (data *DbConn, err error){
 		log.Panic("Failed to connect to database!")
 	}
 
-	dbSource.DbSQL.AutoMigrate(&models.Book{})
+	dbSource.DbSQL.AutoMigrate(&models.Book{},&models.User{})
 	log.Println("CONECTED TO DB")
 
 

@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
+
 //SetupRouter ... Configure routes
 func SetupRouter(db *config.DbConn) *gin.Engine {
 

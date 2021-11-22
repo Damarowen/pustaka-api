@@ -4,14 +4,13 @@ import (
 	"log"
 	"net/http"
 	"pustaka-api/helper"
-	"pustaka-api/service"
-
+	"pustaka-api/JWT"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
 //AuthorizeJWT validates the token user given, return 401 if not valid
-func AuthorizeJWT(jwtService service.IJwtService) gin.HandlerFunc {
+func AuthorizeJWT(jwtService JWT.IJwtService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {

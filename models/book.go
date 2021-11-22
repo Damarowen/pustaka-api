@@ -18,8 +18,8 @@ type Book struct {
 	Description string `gorm:"type:varchar(255)" json:"description"`
 	Price       int    `gorm:"type:int" json:"price"`
 	Rating      int  `gorm:"type:int" json:"rating"`
+	UserID      uint64 `gorm:"not null" json:"-"`
+	User        User   `gorm:"foreignkey:UserID;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"user"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	//	UserID      uint64 `gorm:"not null" json:"-"`
-	//User        User   `gorm:"foreignkey:UserID;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"user"`
 }
