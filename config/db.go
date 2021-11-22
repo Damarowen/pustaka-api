@@ -28,7 +28,7 @@ type DbConn struct {
 
 func ConnectDatabase() (data *DbConn, err error){
 
-	dbSource := &DbConn{}
+	data  = &DbConn{}
 
 	errEnv := godotenv.Load()
 	if errEnv != nil {
@@ -41,18 +41,18 @@ func ConnectDatabase() (data *DbConn, err error){
 	dbName := os.Getenv("DB_NAME")
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPass, dbHost, dbName)
-	dbSource.DbSQL, err  = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	data.DbSQL, err  = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 
 	if err != nil {
 		log.Panic("Failed to connect to database!")
 	}
 
-	dbSource.DbSQL.AutoMigrate(&models.Book{},&models.User{})
+	data.DbSQL.AutoMigrate(&models.Book{},&models.User{})
 	log.Println("CONECTED TO DB")
 
 
-	return dbSource, err
+	return data, err
 }
 
 

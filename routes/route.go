@@ -8,18 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
+var (
+	db, _ = config.ConnectDatabase()
+	bookRepository = book.NewBookRepository(db.DbSQL)
+	bookService = book.NewBookService(bookRepository)
+	bookHandler = handler.NewBookHandler(bookService)
+)
 
 //SetupRouter ... Configure routes
 func SetupRouter(db *config.DbConn) *gin.Engine {
 
 	r := gin.Default()
-
-
-	bookRepository := book.NewBookRepository(db.DbSQL)
-	bookService := book.NewBookService(bookRepository)
-	bookHandler := handler.NewBookHandler(bookService)
-
+	
 	v1 := r.Group("/v1")
 	
 	{
