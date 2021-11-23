@@ -6,57 +6,61 @@ import (
 	"pustaka-api/auth"
 	"pustaka-api/dto"
 	"pustaka-api/helper"
-	"pustaka-api/models"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 //AuthController interface is a contract what this controller can do
-type iAuthController interface {
+type IAuthController interface {
 	Login(ctx *gin.Context)
 	Register(ctx *gin.Context)
 }
 
-type authController struct {
+type AuthController struct {
 	authService auth.IAuthService
 	jwtService  JWT.IJwtService
 }
 
 //NewAuthController creates a new instance of AuthController
-func NewAuthController(authService auth.IAuthService, jwtService JWT.IJwtService) iAuthController {
-	return &authController{
+func NewAuthController(authService auth.IAuthService, jwtService JWT.IJwtService) IAuthController {
+	return &AuthController{
 		authService: authService,
 		jwtService:  jwtService,
 	}
 }
 
-func (c *authController) Login(ctx *gin.Context) {
+func (c *AuthController) Login(ctx *gin.Context) {
 	var loginDTO dto.LoginDTO
 	errDTO := ctx.ShouldBind(&loginDTO)
+
 	if errDTO != nil {
 		response := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-	authResult := c.authService.VerifyCredential(loginDTO.Email, loginDTO.Password)
-	 v, ok := authResult.(models.User); 
 
-	if ok {
-		generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(v.ID, 10))
-		v.Token = generatedToken
-		response := helper.BuildResponse(true, "OK!", v)
-		ctx.JSON(http.StatusOK, response)
+	authResult, err := c.authService.VerifyCredential(loginDTO.Email, loginDTO.Password)
+
+	if err != nil {
+		response := helper.BuildErrorResponse("Please check again your credential",err.Error(), helper.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
-	
-	response := helper.BuildErrorResponse("Please check again your credential", "Invalid Credential", helper.EmptyObj{})
-	ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+
+	//* logic dibawah balikanya boolean
+	user := authResult
+
+	generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(user.ID, 10))
+	user.Token = generatedToken
+	response := helper.BuildResponse(true, "OK!", user)
+	ctx.JSON(http.StatusOK, response)
+
+	// response := helper.BuildErrorResponse("Please check again your credential", "Invalid PASSWORD", helper.EmptyObj{})
+	// ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 }
 
-
-
-func (c *authController) Register(ctx *gin.Context) {
+func (c *AuthController) Register(ctx *gin.Context) {
 	var registerDTO dto.RegisterDTO
 	errDTO := ctx.ShouldBind(&registerDTO)
 	if errDTO != nil {

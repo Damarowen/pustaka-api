@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"log"
 	"pustaka-api/models"
 
@@ -9,11 +10,11 @@ import (
 )
 
 type IUserRepository interface {
-	InsertUser(user models.User) (models.User)
+	InsertUser(user models.User) models.User
 	UpdateUser(user models.User) models.User
-	VerifyCredential(email string, password string) interface{}
+	VerifyCredential(email string) (models.User, error)
 	IsDuplicateEmail(email string) (tx *gorm.DB)
-	FindByEmail(email string) models.User
+	FindByEmail(email string) (models.User, error)
 	ProfileUser(userID string) models.User
 }
 
@@ -34,7 +35,6 @@ func (r *PustakaApiRepository) InsertUser(user models.User) models.User {
 	return user
 }
 
-
 func (r *PustakaApiRepository) UpdateUser(user models.User) models.User {
 	if user.Password != "" {
 		user.Password = hashAndSalt([]byte(user.Password))
@@ -48,13 +48,16 @@ func (r *PustakaApiRepository) UpdateUser(user models.User) models.User {
 	return user
 }
 
-func (r *PustakaApiRepository) VerifyCredential(email string, password string) interface{} {
+func (r *PustakaApiRepository) VerifyCredential(email string) (models.User, error) {
 	var user models.User
-	res := r.pustaka_api.Where("email = ?", email).Take(&user)
-	if res.Error == nil {
-		return user
+	//* find by email
+	err := r.pustaka_api.Where("email = ?", email).Take(&user).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return user , err
 	}
-	return nil
+
+	return user, err
 }
 
 func (r *PustakaApiRepository) IsDuplicateEmail(email string) (tx *gorm.DB) {
@@ -62,10 +65,10 @@ func (r *PustakaApiRepository) IsDuplicateEmail(email string) (tx *gorm.DB) {
 	return r.pustaka_api.Where("email = ?", email).Take(&user)
 }
 
-func (r *PustakaApiRepository) FindByEmail(email string) models.User {
+func (r *PustakaApiRepository) FindByEmail(email string) (models.User, error) {
 	var user models.User
-	r.pustaka_api.Where("email = ?", email).Take(&user)
-	return user
+	err := r.pustaka_api.Where("email = ?", email).Take(&user).Error
+	return user, err
 }
 
 func (r *PustakaApiRepository) ProfileUser(userID string) models.User {
@@ -73,7 +76,6 @@ func (r *PustakaApiRepository) ProfileUser(userID string) models.User {
 	r.pustaka_api.Preload("Books").Preload("Books.User").Find(&user, userID)
 	return user
 }
-
 
 func hashAndSalt(pwd []byte) string {
 	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)

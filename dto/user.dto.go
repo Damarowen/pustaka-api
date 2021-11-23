@@ -1,5 +1,5 @@
 package dto
-
+//* validasi nya bukan di validate: tapi di required
 //UserUpdateDTO is used by client when PUT update profile
 type UserUpdateDTO struct {
 	ID       uint64 `json:"id" form:"id"`
@@ -18,5 +18,5 @@ type LoginDTO struct {
 type RegisterDTO struct {
 	Name     string `json:"name" form:"name" binding:"required"`
 	Email    string `json:"email" form:"email" binding:"required,email" `
-	Password string `json:"password" form:"password" binding:"required"`
+	Password string `json:"password" form:"password" binding:"required,min=6"`
 }
