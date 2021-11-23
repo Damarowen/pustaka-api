@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"log"
 	"pustaka-api/dto"
 	"pustaka-api/models"
@@ -31,9 +32,13 @@ func NewAuthService(userRep user.IUserRepository) IAuthService {
 
 func (s *AuthService) VerifyCredential(email string, password string) (models.User, error) {
 
-	user, errEmailNotFound := s.userRepository.FindByEmail(email)
+	user, isEmailExist, errEmailNotFound := s.userRepository.FindByEmail(email)
 
 	errHash := comparePassword(user.Password, []byte(password))
+
+	if isEmailExist || errEmailNotFound != nil {
+		return user, errEmailNotFound
+	}
 
 	//* kondisi email yg di input benar,  password benar
 	if user.Email == email && errHash == nil {
@@ -60,8 +65,15 @@ func (s *AuthService) CreateUser(user dto.RegisterDTO) models.User {
 }
 
 func (s *AuthService) FindByEmail(email string) (models.User, error) {
-	user, err := s.userRepository.FindByEmail(email)
-	return user, err
+	user, isEmailExist, err := s.userRepository.FindByEmail(email)
+
+	if err != nil {
+		return user, err
+	}
+	if isEmailExist {
+		return user, errors.New("email already exist")
+	}
+	return user, nil
 }
 
 func (s *AuthService) IsDuplicateEmail(email string) bool {

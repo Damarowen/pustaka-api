@@ -6,6 +6,7 @@ import (
 	"pustaka-api/book"
 	"pustaka-api/config"
 	"pustaka-api/handler"
+	"pustaka-api/middleware"
 	"pustaka-api/user"
 
 	"github.com/gin-gonic/gin"
@@ -15,13 +16,17 @@ var (
 	db, _          = config.ConnectDatabase()
 	bookRepository = book.NewBookRepository(db.DbSQL)
 	bookService    = book.NewBookService(bookRepository)
-	bookHandler    = handler.NewBookHandler(bookService)
+	bookController    = handler.NewBookHandler(bookService)
 
 
 	userRepository user.IUserRepository = user.NewUserRepository(db.DbSQL)
 	jwtService     JWT.IJwtService        = JWT.NewJWTService()
 	authService    auth.IAuthService       = auth.NewAuthService(userRepository)
 	authController handler.IAuthController = handler.NewAuthController(authService, jwtService)
+
+	userService    user.IUserService       = user.NewUserService(userRepository)
+	userController handler.IUserController = handler.NewUserController(userService, jwtService)
+
 )
 
 //SetupRouter ... Configure routes
@@ -35,14 +40,20 @@ func SetupRouter(db *config.DbConn) *gin.Engine {
 		authRoutes.POST("/register", authController.Register)
 	}
 
+	userRoutes := r.Group("v1/user", middleware.AuthorizeJWT(jwtService))
+	{
+		userRoutes.GET("/profile", userController.Profile)
+		userRoutes.PUT("/profile", userController.Update)
+	}
+
 	booksRoutes := r.Group("/v1/books")
 	{
 		//booksRoutes.GET("/", bookHandler.RootHandler)
-		booksRoutes.GET("/", bookHandler.GetAllBookHandler)
-		booksRoutes.GET("/:id", bookHandler.GetByIdHandler)
-		booksRoutes.POST("/", bookHandler.PostBookHandler)
-		booksRoutes.PUT("/:id", bookHandler.UpdateBookHandler)
-		booksRoutes.DELETE("/:id", bookHandler.DeleteBookHandler)
+		booksRoutes.GET("/", bookController.GetAllBookHandler)
+		booksRoutes.GET("/:id", bookController.GetByIdHandler)
+		booksRoutes.POST("/", bookController.PostBookHandler)
+		booksRoutes.PUT("/:id", bookController.UpdateBookHandler)
+		booksRoutes.DELETE("/:id", bookController.DeleteBookHandler)
 		//v1.GET("/query", bookHandler.QueryHandler)
 	}
 

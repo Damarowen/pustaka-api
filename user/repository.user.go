@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"pustaka-api/models"
 
@@ -14,7 +15,7 @@ type IUserRepository interface {
 	UpdateUser(user models.User) models.User
 	VerifyCredential(email string) (models.User, error)
 	IsDuplicateEmail(email string) (tx *gorm.DB)
-	FindByEmail(email string) (models.User, error)
+	FindByEmail(email string) (models.User, bool, error)
 	ProfileUser(userID string) models.User
 }
 
@@ -41,6 +42,7 @@ func (r *PustakaApiRepository) UpdateUser(user models.User) models.User {
 	} else {
 		var tempUser models.User
 		r.pustaka_api.Find(&tempUser, user.ID)
+		fmt.Println(user)
 		user.Password = tempUser.Password
 	}
 
@@ -65,10 +67,13 @@ func (r *PustakaApiRepository) IsDuplicateEmail(email string) (tx *gorm.DB) {
 	return r.pustaka_api.Where("email = ?", email).Take(&user)
 }
 
-func (r *PustakaApiRepository) FindByEmail(email string) (models.User, error) {
+func (r *PustakaApiRepository) FindByEmail(email string) (models.User, bool, error) {
 	var user models.User
 	err := r.pustaka_api.Where("email = ?", email).Take(&user).Error
-	return user, err
+	if err != nil {
+		return user, false, err
+	}
+	return user, true, nil
 }
 
 func (r *PustakaApiRepository) ProfileUser(userID string) models.User {
