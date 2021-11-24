@@ -3,16 +3,19 @@ package handler
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
 	//"github.com/go-playground/validator/v10"
 	"net/http"
+	"pustaka-api/JWT"
 	"pustaka-api/book"
 	"pustaka-api/dto"
 	"pustaka-api/helper"
+	"pustaka-api/middleware"
+	"pustaka-api/models"
 )
-
 
 type IBookHandlers interface {
 	RootHandler(context *gin.Context)
@@ -26,10 +29,11 @@ type IBookHandlers interface {
 
 type BookHandlers struct {
 	bookService book.Iservice
+	jwtService  JWT.IJwtService
 }
 
-func NewBookHandler(bookService book.Iservice) IBookHandlers {
-	return &BookHandlers{bookService: bookService}
+func NewBookHandler(bookServ book.Iservice, jwtServ JWT.IJwtService) IBookHandlers {
+	return &BookHandlers{bookService: bookServ, jwtService: jwtServ}
 }
 
 func (h *BookHandlers) RootHandler(c *gin.Context) {
@@ -66,6 +70,12 @@ func (h *BookHandlers) GetByIdHandler(c *gin.Context) {
 
 	singleBook, err := h.bookService.FindById(uint(id))
 
+	if (singleBook == models.Book{}) {
+		res := helper.BuildErrorResponse("Data not found", "No data with given id", helper.EmptyObj{})
+		c.JSON(http.StatusNotFound, res)
+		return
+	}
+
 	if err != nil {
 		fmt.Println(err)
 		response := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
@@ -73,18 +83,15 @@ func (h *BookHandlers) GetByIdHandler(c *gin.Context) {
 		return
 	}
 
-	res := helper.MappingResponse(singleBook)
+	//	res := helper.MappingResponse(singleBook)
 
-	c.JSON(http.StatusOK, gin.H{
-		"data ":   res,
-		"message": "Success",
-	})
+	response := helper.BuildResponse(true, "SUCCESS", singleBook)
+	c.JSON(http.StatusCreated, response)
 }
 
 func (h *BookHandlers) UpdateBookHandler(c *gin.Context) {
 
-	var bookDTO  dto.BookRequest
-
+	var bookDTO dto.BookUpdateDTO
 	errDTO := c.ShouldBind(&bookDTO)
 
 	if errDTO != nil {
@@ -95,47 +102,71 @@ func (h *BookHandlers) UpdateBookHandler(c *gin.Context) {
 	}
 
 	idString := c.Param("id")
-
+	userID := middleware.GetCurrentUser(c.Request.Context())
+	tes , _:= strconv.ParseUint(userID.(string), 10, 32)
 	id, err := strconv.ParseUint(idString, 10, 32)
 
-	singleBook, err := h.bookService.Update(uint(id), bookDTO)
+	bookDTO.ID = uint(id)
+	bookDTO.CreatedAt = time.Now()
+	bookDTO.UserID = tes
+	ok, err := h.bookService.IsAllowedToEdit(userID.(string), bookDTO.ID)
 
+	//* if id not found
 	if err != nil {
-		fmt.Println(err)
-		response := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
-		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		response := helper.BuildErrorResponse("You dont have permission", err.Error(), helper.EmptyObj{})
+		c.JSON(http.StatusForbidden, response)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data ":   singleBook,
-		"message": "Success",
-	})
+	//* if book not belonged to user
+	if !ok && err == nil {
+		response := helper.BuildErrorResponse("You dont have permission", " You are not the owner", helper.EmptyObj{})
+		c.JSON(http.StatusForbidden, response)
+		return
+	}
+
+	b, _ := h.bookService.Update(bookDTO)
+	res := helper.BuildResponse(true, "SUCCESS", b)
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *BookHandlers) DeleteBookHandler(c *gin.Context) {
+	var book models.Book
 
 	idString := c.Param("id")
+	userID := middleware.GetCurrentUser(c.Request.Context())
 
-	id, err := strconv.ParseUint(idString, 10, 32)
+	id, _ := strconv.ParseUint(idString, 0, 0)
+	book.ID = uint(id)
 
-	singleBook, err := h.bookService.Delete(uint(id))
+	ok, err := h.bookService.IsAllowedToEdit(userID.(string), book.ID)
 
+	//* if id not found
 	if err != nil {
-		fmt.Println(err)
-		response := helper.BuildErrorResponse("Failed to process request", err.Error(), helper.EmptyObj{})
-		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		response := helper.BuildErrorResponse("You dont have permission", err.Error(), helper.EmptyObj{})
+		c.JSON(http.StatusForbidden, response)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data ":   singleBook,
-		"message": "Success",
-	})
+	//* if book not belonged to user
+	if !ok && err == nil {
+		response := helper.BuildErrorResponse("You dont have permission", " You are not the owner", helper.EmptyObj{})
+		c.JSON(http.StatusForbidden, response)
+		return
+	}
+
+	h.bookService.Delete(book)
+	res := helper.BuildResponse(true, "Deleted", helper.EmptyObj{})
+	c.JSON(http.StatusOK, res)
+
 }
 
 func (h *BookHandlers) PostBookHandler(c *gin.Context) {
-	var bookDTO  dto.BookRequest
+	var bookDTO dto.BookRequest
+
+	userID := middleware.GetCurrentUser(c.Request.Context())
+
+	convertedUserID, _ := strconv.ParseUint(userID.(string), 10, 64)
 
 	errDTO := c.ShouldBind(&bookDTO)
 
@@ -145,6 +176,9 @@ func (h *BookHandlers) PostBookHandler(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
+
+	//* masukin user id ke dto
+	bookDTO.UserID = convertedUserID
 
 	newBook, err := h.bookService.Create(bookDTO)
 
@@ -155,10 +189,8 @@ func (h *BookHandlers) PostBookHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data ":   newBook,
-		"message": "Success",
-	})
+	response := helper.BuildResponse(true, "SUCCESS", newBook)
+	c.JSON(http.StatusCreated, response)
 
 }
 

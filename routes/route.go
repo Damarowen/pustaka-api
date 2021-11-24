@@ -16,7 +16,7 @@ var (
 	db, _          = config.ConnectDatabase()
 	bookRepository = book.NewBookRepository(db.DbSQL)
 	bookService    = book.NewBookService(bookRepository)
-	bookController    = handler.NewBookHandler(bookService)
+	bookController    = handler.NewBookHandler(bookService, jwtService)
 
 
 	userRepository user.IUserRepository = user.NewUserRepository(db.DbSQL)
@@ -46,7 +46,7 @@ func SetupRouter(db *config.DbConn) *gin.Engine {
 		userRoutes.PUT("/profile", userController.Update)
 	}
 
-	booksRoutes := r.Group("/v1/books")
+	booksRoutes := r.Group("/v1/books", middleware.AuthorizeJWT(jwtService))
 	{
 		//booksRoutes.GET("/", bookHandler.RootHandler)
 		booksRoutes.GET("/", bookController.GetAllBookHandler)

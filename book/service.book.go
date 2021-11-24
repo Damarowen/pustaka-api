@@ -2,16 +2,21 @@ package book
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"pustaka-api/dto"
 	"pustaka-api/models"
+
+	"github.com/mashingan/smapping"
 )
 
 type Iservice interface {
 	FindAll() ([]models.Book, error)
 	FindById(ID uint) (models.Book, error)
 	Create(book dto.BookRequest) (models.Book, error)
-	Update(ID uint, book dto.BookRequest) (models.Book, error)
-	Delete(ID uint) (models.Book, error)
+	Update(book dto.BookUpdateDTO) (models.Book, error)
+	Delete(book models.Book) (models.Book, error)
+	IsAllowedToEdit(userID string, bookID uint) (bool, error)
 }
 
 type Service struct {
@@ -31,52 +36,60 @@ func (s *Service) FindById(ID uint) (models.Book, error) {
 
 	book, err := s.PustakaApiRepository.FindById(ID)
 
-	if book.ID == 0 {
-		return book, errors.New("ID NOT FOUND")
-	}
-
 	return book, err
 
 }
 
 func (s *Service) Create(bookRequest dto.BookRequest) (models.Book, error) {
 
-	book := models.Book{
-		Title:       bookRequest.Title,
-		Price:       bookRequest.Price,
-		Description: bookRequest.Description,
-		Rating:      bookRequest.Rating,
-	}
+	book := models.Book{}
 
+	//* BEFORE
+	// book := models.Book{
+	// 	Title:       bookRequest.Title,
+	// 	Price:       bookRequest.Price,
+	// 	Description: bookRequest.Description,
+	// 	Rating:      bookRequest.Rating,
+	// }
+
+	//* mappong dengan lib
+	err := smapping.FillStruct(&book, smapping.MapFields(&bookRequest))
+
+	if err != nil {
+		log.Fatalf("Failed map %v: ", err)
+	}
 	newBook, err := s.PustakaApiRepository.Create(book)
 	return newBook, err
 }
 
-func (s *Service) Update(ID uint, bookRequest dto.BookRequest) (models.Book, error) {
+func (s *Service) Update(b dto.BookUpdateDTO) (models.Book, error) {
 
-	find, err := s.PustakaApiRepository.FindById(ID)
+	// find, err := s.PustakaApiRepository.FindById(ID)
 
-	if find.ID == 0 {
-		return find, errors.New("ID NOT FOUND")
+	// if find.ID == 0 {
+	// 	return find, errors.New("ID NOT FOUND")
+	// }
+
+	book := models.Book{}
+	err := smapping.FillStruct(&book, smapping.MapFields(&b))
+	if err != nil {
+		log.Fatalf("Failed map %v: ", err)
 	}
+	res, err := s.PustakaApiRepository.Update(book)
+	return res, err
+}
 
-	find.Title = bookRequest.Title
-	find.Price = bookRequest.Price
-	find.Description = bookRequest.Description
-	find.Rating = bookRequest.Rating
+func (s *Service) Delete(book models.Book) (models.Book, error) {
 
-	b, err := s.PustakaApiRepository.Update(find)
+	b, err := s.PustakaApiRepository.Delete(book)
 	return b, err
 }
 
-func (s *Service) Delete(ID uint) (models.Book, error) {
-
-	find, err := s.PustakaApiRepository.FindById(ID)
-
-	if find.ID == 0 {
-		return find, errors.New("ID NOT FOUND")
+func (service *Service) IsAllowedToEdit(userID string, bookID uint) (bool, error) {
+	b, _ := service.PustakaApiRepository.FindById(bookID)
+	if b.ID == 0 {
+		return false, errors.New("ID NOT FOUND")
 	}
-
-	b, err := s.PustakaApiRepository.Delete(find)
-	return b, err
+	id := fmt.Sprintf("%v", b.UserID)
+	return userID == id, nil
 }

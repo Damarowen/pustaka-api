@@ -1,13 +1,20 @@
 package middleware
 
 import (
+	"context"
 	"log"
 	"net/http"
-	"pustaka-api/helper"
 	"pustaka-api/JWT"
+	"pustaka-api/helper"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
+
+//* HELPER FUNC UNTUK DIPANGGIL LAGI NANTI, UNTUK STORE SEMENTARA
+func addToContext(c *gin.Context, key interface{}, value interface{}) *http.Request {
+	return c.Request.WithContext(context.WithValue(c.Request.Context(), key, value))
+}
 
 //AuthorizeJWT validates the token user given, return 401 if not valid
 func AuthorizeJWT(jwtService JWT.IJwtService) gin.HandlerFunc {
@@ -26,8 +33,17 @@ func AuthorizeJWT(jwtService JWT.IJwtService) gin.HandlerFunc {
 		}
 		if token.Valid {
 			claims := token.Claims.(jwt.MapClaims)
+
+			//* LANSUNG STORE USER ID NYA
+			c.Request = addToContext(c, "GETUSER", claims["user_id"])
 			log.Println("Claim[user_id]: ", claims["user_id"])
-			log.Println("Claim[issuer] :", claims["issuer"])
-		} 
+			log.Println("Claim[issuer] :", claims["iss"])
+			c.Next()
+		}
 	}
+}
+
+func GetCurrentUser(ctx context.Context) interface{} {
+	cu := ctx.Value("GETUSER")
+	return cu
 }

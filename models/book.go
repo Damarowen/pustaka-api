@@ -19,7 +19,9 @@ type Book struct {
 	Price       int    `gorm:"type:int" json:"price"`
 	Rating      int  `gorm:"type:int" json:"rating"`
 	UserID      uint64 `gorm:"not null" json:"-"`
+	//* relasi foreign key userId ke tabel user
 	User        User   `gorm:"foreignkey:UserID;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"user"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
+
