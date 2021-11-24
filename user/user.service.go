@@ -32,6 +32,7 @@ func (service *UserService) Update(user dto.UserUpdateDTO) (models.User, bool, e
 	
 	userToUpdate := models.User{}
 	err := smapping.FillStruct(&userToUpdate, smapping.MapFields(&user))
+	
 	if err != nil {
 		log.Fatalf("Failed map %v:", err)
 	}

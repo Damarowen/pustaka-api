@@ -78,7 +78,7 @@ func (r *PustakaApiRepository) FindByEmail(email string) (models.User, bool, err
 
 func (r *PustakaApiRepository) ProfileUser(userID string) models.User {
 	var user models.User
-	r.pustaka_api.Preload("Books").Preload("Books.User").Find(&user, userID)
+	r.pustaka_api.Preload("Books.User").Find(&user, userID)
 	return user
 }
 
