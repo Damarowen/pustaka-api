@@ -13,10 +13,10 @@ import (
 type IUserRepository interface {
 	InsertUser(user models.User) models.User
 	UpdateUser(user models.User) models.User
-	VerifyCredential(email string) (models.User, error)
 	IsDuplicateEmail(email string) (tx *gorm.DB)
 	FindByEmail(email string) (models.User, bool, error)
 	ProfileUser(userID string) models.User
+		// VerifyCredential(email string) (models.User, error)
 }
 
 type PustakaApiRepository struct {
@@ -50,17 +50,17 @@ func (r *PustakaApiRepository) UpdateUser(user models.User) models.User {
 	return user
 }
 
-func (r *PustakaApiRepository) VerifyCredential(email string) (models.User, error) {
-	var user models.User
-	//* find by email
-	err := r.pustaka_api.Where("email = ?", email).Take(&user).Error
+// func (r *PustakaApiRepository) VerifyCredential(email string) (models.User, error) {
+// 	var user models.User
+// find by email
+// 	err := r.pustaka_api.Where("email = ?", email).Take(&user).Error
 
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return user , err
-	}
+// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+// 		return user , err
+// 	}
 
-	return user, err
-}
+// 	return user, err
+// }
 
 func (r *PustakaApiRepository) IsDuplicateEmail(email string) (tx *gorm.DB) {
 	var user models.User
