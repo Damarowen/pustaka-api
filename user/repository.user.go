@@ -71,7 +71,7 @@ func (r *PustakaApiRepository) FindByEmail(email string) (models.User, bool, err
 	var user models.User
 	err := r.pustaka_api.Where("email = ?", email).Take(&user).Error
 	if err != nil {
-		return user, false, err
+		return user, false, errors.New("Email not found")
 	}
 	return user, true, nil
 }

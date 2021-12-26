@@ -34,24 +34,21 @@ func (s *AuthService) VerifyCredential(email string, password string) (models.Us
 
 	user, isEmailExist, errEmailNotFound := s.userRepository.FindByEmail(email)
 
-	errHash := comparePassword(user.Password, []byte(password))
+	isSamePassword, errHash := comparePassword(user.Password, []byte(password))
 
-	if isEmailExist || errEmailNotFound != nil {
+	if !isEmailExist && !isSamePassword {
+		return user, errors.New("invalid credentials")
+	}
+
+	if !isEmailExist {
 		return user, errEmailNotFound
 	}
 
-	//* kondisi email yg di input benar,  password benar
-	if user.Email == email && errHash == nil {
-		return user, nil
-	}
-
-	//* kondisi email yg di input benar, tapi password salah
-	if user.Email == email && errHash != nil {
+	if !isSamePassword{
 		return user, errHash
 	}
 
-	//* kondisi email yg di input benar,  tapi tidak ketemu
-	return user, errEmailNotFound
+	return user, nil
 }
 
 func (s *AuthService) CreateUser(user dto.RegisterDTO) models.User {
@@ -81,12 +78,11 @@ func (s *AuthService) IsDuplicateEmail(email string) bool {
 	return !(res.Error == nil)
 }
 
-func comparePassword(hashedPwd string, plainPassword []byte) error {
+func comparePassword(hashedPwd string, plainPassword []byte) (bool, error) {
 	byteHash := []byte(hashedPwd)
 	err := bcrypt.CompareHashAndPassword(byteHash, plainPassword)
 	if err != nil {
-		log.Println(err)
-		return err
+		return false,  errors.New("wrong password")
 	}
-	return nil
+	return true, nil
 }
